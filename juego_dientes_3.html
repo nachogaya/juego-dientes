@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>JUEGO DE LOS DIENTES</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    html, body {
+      margin: 0;
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #ffeef5 0, #f3fbff 40%, #e6f7ff 100%);
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+      padding: 0;
+      text-transform: uppercase;
+      font-size: 18px;
+    }
+
+    .game-container {
+      max-width: 1200px;
+      width: 100%;
+      height: 100%;
+      background: #ffffffcc;
+      backdrop-filter: blur(6px);
+      border-radius: 24px;
+      padding: 12px 16px 12px 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+      border: 2px solid #ffdde8;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    h1 {
+      font-size: 2.4rem;
+      text-align: center;
+      margin: 0 0 4px;
+    }
+
+    .subtitle {
+      text-align: center;
+      margin-bottom: 8px;
+      font-size: 1rem;
+      color: #555;
+    }
+
+    .layout {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      min-height: 0;
+    }
+
+    @media (min-width: 850px) {
+      .layout {
+        grid-template-columns: 1.1fr 1fr;
+      }
+      .cards-area, .dropzones {
+        height: 100%;
+      }
+    }
+
+    .cards-area {
+      border-radius: 18px;
+      padding: 10px;
+      background: #e7f5ff;
+      border: 2px dashed #b3e0ff;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .cards-title {
+      text-align: center;
+      font-weight: 700;
+      margin-bottom: 6px;
+      font-size: 1.1rem;
+    }
+
+    .cards-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      overflow-y: auto;
+      padding-bottom: 4px;
+    }
+
+    .card {
+      width: 150px;
+      height: 150px;
+      border-radius: 22px;
+      background: #ffffff;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      text-align: center;
+      font-size: 1.2rem;
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, outline 0.12s ease;
+    }
+
+    .card-emoji {
+      font-size: 2.8rem;
+      margin-bottom: 6px;
+    }
+
+    .card:hover {
+      transform: scale(1.03);
+      box-shadow: 0 6px 14px rgba(0,0,0,0.16);
+    }
+
+    .card.selected {
+      outline: 4px solid #ff80ab;
+      transform: scale(1.06);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+    }
+
+    .dropzones {
+      display: grid;
+      gap: 10px;
+      min-height: 0;
+    }
+
+    .dropzone {
+      border-radius: 20px;
+      border: 3px dashed #999;
+      padding: 10px;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      background: #fffdf7;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .dropzone-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+
+    .dropzone-emoji {
+      font-size: 2rem;
+    }
+
+    .dropzone-hint {
+      font-size: 0.9rem;
+      color: #666;
+    }
+
+    .dropzone-cards {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 4px;
+      overflow-y: auto;
+      padding-bottom: 4px;
+    }
+
+    .dropzone.friend {
+      background: #ecffef;
+      border-color: #74c878;
+    }
+
+    .dropzone.enemy {
+      background: #ffecec;
+      border-color: #f58a8a;
+    }
+
+    .buttons-row {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 10px 18px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+      background: #eeeeee;
+    }
+
+    button:active {
+      transform: scale(0.96);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+    }
+
+    .btn-check {
+      background: #4caf50;
+      color: #ffffff;
+    }
+
+    .message {
+      text-align: center;
+      margin-top: 6px;
+      font-size: 1rem;
+      min-height: 1.2em;
+    }
+
+    .message.ok {
+      color: #2e7d32;
+      font-weight: 700;
+    }
+
+    .message.error {
+      color: #c62828;
+      font-weight: 700;
+    }
+
+    /* MODAL DE FEEDBACK GRANDE */
+    .feedback-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+
+    .feedback-window {
+      background: #ffffff;
+      border-radius: 24px;
+      padding: 20px 18px 16px 18px;
+      max-width: 420px;
+      width: 90%;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      text-align: center;
+      position: relative;
+      border: 3px solid #c8f7c5;
+    }
+
+    .feedback-window.error {
+      border-color: #ffcdd2;
+    }
+
+    .feedback-text {
+      font-size: 1.4rem;
+      font-weight: 800;
+      margin: 10px 8px 16px 8px;
+    }
+
+    .feedback-ok {
+      background: #4caf50;
+      color: #ffffff;
+      border-radius: 999px;
+      padding: 10px 24px;
+      font-size: 1rem;
+    }
+
+    .feedback-close {
+      position: absolute;
+      right: 10px;
+      top: 8px;
+      background: transparent;
+      box-shadow: none;
+      font-size: 1.2rem;
+      padding: 4px 8px;
+    }
+
+    .feedback-close:active {
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* EFECTO DE TEMBLOR PARA ERROR EN CARTA */
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      50% { transform: translateX(6px); }
+      75% { transform: translateX(-4px); }
+      100% { transform: translateX(0); }
+    }
+
+    .shake {
+      animation: shake 0.25s;
+    }
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <h1>🦷 JUEGO DE LOS DIENTES</h1>
+    <div class="subtitle">
+      ARRAStraMOS LAS TARJETAS A LA CAJA CORRECTA: <br />
+      AMIGOS DEL DIENTE 😁 O ENEMIGOS DEL DIENTE 😬
+    </div>
+
+    <div class="layout">
+      <!-- ZONA DE TARJETAS -->
+      <div class="cards-area">
+        <div class="cards-title">TOCA UNA TARJETA Y LUEGO UNA CAJA</div>
+        <div id="cardsTray" class="cards-grid">
+          <!-- AMIGOS -->
+          <div class="card" data-type="amigo">
+            <div class="card-emoji">🍎</div>
+            <div>MANZANA</div>
+          </div>
+          <div class="card" data-type="amigo">
+            <div class="card-emoji">💧</div>
+            <div>AGUA</div>
+          </div>
+          <div class="card" data-type="amigo">
+            <div class="card-emoji">🥛</div>
+            <div>LECHE / YOGUR</div>
+          </div>
+          <div class="card" data-type="amigo">
+            <div class="card-emoji">🥕</div>
+            <div>ZANAHORIA</div>
+          </div>
+          <div class="card" data-type="amigo">
+            <div class="card-emoji">🪥</div>
+            <div>CEPILLO</div>
+          </div>
+
+          <!-- ENEMIGOS -->
+          <div class="card" data-type="enemigo">
+            <div class="card-emoji">🍬</div>
+            <div>CARAMELOS</div>
+          </div>
+          <div class="card" data-type="enemigo">
+  <div class="card-emoji">🧋</div>
+  <div>LECHE CON COLACAO</div>
+</div>
+          <div class="card" data-type="enemigo">
+            <div class="card-emoji">🍪</div>
+            <div>GALLETAS</div>
+          </div>
+          <div class="card" data-type="enemigo">
+            <div class="card-emoji">🧁</div>
+            <div>BOLLERÍA</div>
+          </div>
+          <div class="card" data-type="enemigo">
+            <div class="card-emoji">🦠</div>
+            <div>BACTERIAS</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ZONAS DE CAÍDA -->
+      <div class="dropzones">
+        <div class="dropzone friend" data-accept="amigo">
+          <div class="dropzone-header">
+            <span class="dropzone-emoji">😁</span>
+            <span>AMIGOS DEL DIENTE</span>
+          </div>
+          <div class="dropzone-hint">COSAS QUE AYUDAN A QUE EL DIENTE ESTÉ FUERTE.</div>
+          <div class="dropzone-cards"></div>
+        </div>
+
+        <div class="dropzone enemy" data-accept="enemigo">
+          <div class="dropzone-header">
+            <span class="dropzone-emoji">😬</span>
+            <span>ENEMIGOS DEL DIENTE</span>
+          </div>
+          <div class="dropzone-hint">COSAS QUE PUEDEN HACER AGUJERITOS EN LOS DIENTES.</div>
+          <div class="dropzone-cards"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="buttons-row">
+      <button id="btnReset">REINICIAR</button>
+      <button id="btnCheck" class="btn-check">COMPROBAR TODO</button>
+    </div>
+    <div id="message" class="message"></div>
+
+    <!-- MODAL DE FEEDBACK -->
+    <div id="feedbackOverlay" class="feedback-overlay">
+      <div id="feedbackWindow" class="feedback-window">
+        <button id="feedbackClose" class="feedback-close">✖</button>
+        <div id="feedbackText" class="feedback-text"></div>
+        <button id="feedbackOk" class="feedback-ok">ACEPTAR</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      const cards = Array.from(document.querySelectorAll('.card'));
+      const tray = document.getElementById('cardsTray');
+      const dropzones = Array.from(document.querySelectorAll('.dropzone'));
+      const messageEl = document.getElementById('message');
+      const btnReset = document.getElementById('btnReset');
+      const btnCheck = document.getElementById('btnCheck');
+
+      const feedbackOverlay = document.getElementById('feedbackOverlay');
+      const feedbackText = document.getElementById('feedbackText');
+      const feedbackWindow = document.getElementById('feedbackWindow');
+      const feedbackOk = document.getElementById('feedbackOk');
+      const feedbackClose = document.getElementById('feedbackClose');
+
+      let selectedCard = null;
+      let audioCtx = null;
+
+      function setMessage(text, type) {
+        messageEl.textContent = text || '';
+        messageEl.classList.remove('ok', 'error');
+        if (type === 'ok') messageEl.classList.add('ok');
+        if (type === 'error') messageEl.classList.add('error');
+      }
+
+      // SONIDOS
+      function playTone(freq, duration) {
+        try {
+          if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          }
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.value = freq;
+          gain.gain.value = 0.15;
+
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+
+          const now = audioCtx.currentTime;
+          osc.start(now);
+          osc.stop(now + duration);
+        } catch (e) {
+          // si falla, simplemente no suena
+        }
+      }
+
+      function playSuccessSound() {
+        playTone(1000, 0.18);
+      }
+
+      function playErrorSound() {
+        playTone(220, 0.22);
+      }
+
+      // MODAL FEEDBACK
+      function showFeedback(type) {
+        if (type === 'ok') {
+          feedbackText.textContent = '¡CORRECTO! MUY BIEN 😄';
+          feedbackWindow.classList.remove('error');
+        } else if (type === 'error') {
+          feedbackText.textContent = 'ESTE VA EN LA OTRA CAJA 😅';
+          feedbackWindow.classList.add('error');
+        }
+        feedbackOverlay.style.display = 'flex';
+      }
+
+      function hideFeedback() {
+        feedbackOverlay.style.display = 'none';
+      }
+
+      feedbackOk.addEventListener('click', hideFeedback);
+      feedbackClose.addEventListener('click', hideFeedback);
+
+      // SELECCIÓN DE TARJETA
+      function selectCard(card) {
+        if (selectedCard === card) {
+          card.classList.remove('selected');
+          selectedCard = null;
+          setMessage('', null);
+          return;
+        }
+        if (selectedCard) {
+          selectedCard.classList.remove('selected');
+        }
+        selectedCard = card;
+        selectedCard.classList.add('selected');
+        setMessage('AHORA TOCAMOS LA CAJA DONDE QUEREMOS PONER LA TARJETA.', null);
+      }
+
+      cards.forEach(card => {
+        card.addEventListener('click', () => {
+          selectCard(card);
+        });
+      });
+
+      // CLICK EN CAJAS
+      dropzones.forEach(zone => {
+        zone.addEventListener('click', () => {
+          if (!selectedCard) return;
+
+          const expected = selectedCard.dataset.type; // amigo / enemigo
+          const accept = zone.dataset.accept;
+
+          if (expected === accept) {
+            const holder = zone.querySelector('.dropzone-cards');
+            holder.appendChild(selectedCard);
+            selectedCard.classList.remove('selected');
+            selectedCard.classList.remove('shake');
+            selectedCard = null;
+            playSuccessSound();
+            showFeedback('ok');
+            setMessage('MUY BIEN, HAS PUESTO LA TARJETA EN LA CAJA CORRECTA.', 'ok');
+          } else {
+            selectedCard.classList.add('shake');
+            setTimeout(() => {
+              if (selectedCard) selectedCard.classList.remove('shake');
+            }, 260);
+            playErrorSound();
+            showFeedback('error');
+            setMessage('PROBAMOS EN LA OTRA CAJA. ¡LO ESTÁIS HACIENDO GENIAL!', 'error');
+            selectedCard.classList.remove('selected');
+            selectedCard = null;
+          }
+        });
+      });
+
+      // BOTÓN REINICIAR
+      btnReset.addEventListener('click', () => {
+        cards.forEach(card => {
+          tray.appendChild(card);
+          card.classList.remove('selected');
+          card.classList.remove('shake');
+        });
+        selectedCard = null;
+        setMessage('', null);
+        hideFeedback();
+      });
+
+      // BOTÓN COMPROBAR TODO
+      btnCheck.addEventListener('click', () => {
+        let allPlaced = true;
+        let allCorrect = true;
+
+        cards.forEach(card => {
+          const parentZone = card.closest('.dropzone');
+          if (!parentZone) {
+            allPlaced = false;
+            return;
+          }
+          const expected = card.dataset.type;
+          const accept = parentZone.dataset.accept;
+          if (expected !== accept) {
+            allCorrect = false;
+          }
+        });
+
+        if (!allPlaced) {
+          setMessage('AÚN HAY TARJETAS SIN COLOCAR. ¡SEGUIMOS JUGANDO!', 'error');
+          showFeedback('error');
+          playErrorSound();
+        } else if (!allCorrect) {
+          setMessage('ALGUNA TARJETA ESTÁ EN LA CAJA EQUIVOCADA. VAMOS A REVISAR JUNTOS.', 'error');
+          showFeedback('error');
+          playErrorSound();
+        } else {
+          setMessage('¡PERFECTO! TODAS LAS TARJETAS ESTÁN EN LA CAJA CORRECTA. ¡SOIS UNOS EXPERTOS DE LOS DIENTES!', 'ok');
+          feedbackText.textContent = '¡TODAS CORRECTAS! 🦷✨';
+          feedbackWindow.classList.remove('error');
+          feedbackOverlay.style.display = 'flex';
+          playSuccessSound();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
